@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const validator = require('validator');
 const errorHandler = require('../utils/error');
 
 
@@ -10,7 +11,20 @@ const signup =  (async(req , res , next) => {
         next(errorHandler(400 , 'Please fill all in required fileds'));
     }
 
-    try {        
+    const exist = await User.findOne({email});
+    if (exist){
+        next(errorHandler(400 , 'This email is already been registered'));
+    }
+
+    if (!validator.isEmail (email)){
+        next(errorHandler(400 , 'Please enter a valid email'));
+    }
+
+    if (!validator.isStrongPassword(password)){
+        next(errorHandler(400 , 'Please enter a strong password'));
+    }
+
+    try { 
         const hashedPassword = await bcrypt.hash (password , 10);
         const newUser = new User({username , email , password : hashedPassword});
         await newUser.save();
@@ -28,6 +42,14 @@ const signin = (async (req , res , next) => {
         next(errorHandler(400 ,  'Please fill all in required fields'));
     }
 
+    if (!validator.isEmail (email)){
+        next(errorHandler(400 , 'Please enter a valid email'));
+    }
+
+    if (!validator.isStrongPassword(password)){
+        next(errorHandler(400 , 'Please enter a strong password'));
+    }
+    
     try {
         const validUser = await User.findOne({email});
         if (!validUser){
@@ -41,7 +63,7 @@ const signin = (async (req , res , next) => {
 
         const token = jwt.sign({id : validUser._id} , process.env.JWT_SECRET);
         const {password : pass , ...rest} = validUser._doc;
-        res.status(200).cookie('access_token' , token , {httpOnly : true}).json(rest);
+        res.status(200).cookie('access_token' , token , {httpOnly : true}).json({'token' : token , rest });
     }
     catch (error){
         next(errorHandler(error));
