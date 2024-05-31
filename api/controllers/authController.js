@@ -27,8 +27,10 @@ const signup =  (async(req , res , next) => {
     try { 
         const hashedPassword = await bcrypt.hash (password , 10);
         const newUser = new User({username , email , password : hashedPassword});
+        const token = jwt.sign({id : newUser._id } , process.env.JWT_SECRET);
+        const {password : pass , ... rest} = newUser._doc;
         await newUser.save();
-        res.json({'message' : 'user signed up successfully !'});
+        res.status(200).cookie('access_token' , token , {httpOnly : true}).json({'token' : token , rest });
     }
     catch (error){
         next(error);
@@ -61,7 +63,7 @@ const signin = (async (req , res , next) => {
             return next (errorHandler(400 , 'Please enter a correct password'));
         }
 
-        const token = jwt.sign({id : validUser._id} , process.env.JWT_SECRET);
+        const token = jwt.sign({id : validUser._id , user_type: validUser.user_type} , process.env.JWT_SECRET);
         const {password : pass , ...rest} = validUser._doc;
         res.status(200).cookie('access_token' , token , {httpOnly : true}).json({'token' : token , rest });
     }

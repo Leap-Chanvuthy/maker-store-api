@@ -14,9 +14,9 @@ const userSchema = new mongoose.Schema({
         type : String,
         required : true
     },
-    user_tyype : {
+    user_type : {
         type : String,
-        default : 'guest'
+        default : 'admin'
     },
     profileImage : {
         type : String,
