@@ -87,9 +87,40 @@ const deleteProduct = (async(req , res , next) => {
         next(errorHandler(400 , error));
     }
 });
+
+
+
+const updateProduct = (async(req , res , next) => {
+    try{
+        const id = req.params.id;
+        const { productName, productType, productQty, price, imagePath, description } = req.body;
+        
+        const productToUpdate = await Product.findById({_id : id});
+
+        if (!productToUpdate){
+            return res.status(400).json({message : 'product not found'});
+        }
+
+        productToUpdate.productName = productName;
+        productToUpdate.productType = productType;
+        productToUpdate.productQty = productQty;
+        productToUpdate.price = price;
+        productToUpdate.imagePath = imagePath;
+        productToUpdate.description = description;
+
+        const updated = await productToUpdate.save();
+
+        res.status(200).json({message : 'success' , product : updated});
+
+    }catch (error){
+        next(errorHandler(400 , error));
+    }
+
+
+});
   
 
 
   
 
-module.exports = {getProducts , getProduct , createProducts , deleteProduct};
+module.exports = {getProducts , getProduct , createProducts , deleteProduct , updateProduct};
