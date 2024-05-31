@@ -70,9 +70,26 @@ const createProducts = async (req, res, next) => {
     } catch (error) {
       next(errorHandler(400, error.message));
     }
-  };
+};
+
+
+const deleteProduct = (async(req , res , next) => {
+    try {
+        const id = req.params.id;
+        const productToDelete = await Product.findByIdAndDelete({_id : id});
+        if (productToDelete){
+            res.status(200).json({message : 'product deleted successfully'});
+        }else {
+            res.status(400).json({message : 'failed to delete product'});
+        }
+    }   
+    catch (error){
+        next(errorHandler(400 , error));
+    }
+});
   
+
 
   
 
-module.exports = {getProducts , getProduct , createProducts};
+module.exports = {getProducts , getProduct , createProducts , deleteProduct};
