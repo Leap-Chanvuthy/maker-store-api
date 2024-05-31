@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 
 // import routes
 const authRoute = require('./routes/authRoute');
-const guestRoute = require('./routes/guestRoute');  // Corrected the path here
+const guestRoute = require('./routes/guestRoute');
+const productRoute = require('./routes/productRoute');
 
 // node configurations
 const app = express();
@@ -30,6 +31,7 @@ app.listen(process.env.PORT, () => {
 // api endpoints
 app.use('/api/auth', authRoute);
 app.use('/api', guestRoute);
+app.use('/api' , productRoute);
 
 // global error handler
 app.use((err, req, res, next) => {
