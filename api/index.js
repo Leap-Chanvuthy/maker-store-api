@@ -3,9 +3,10 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // import routes
-const authRoute = require('./routes/authRoute');
-const guestRoute = require('./routes/guestRoute');
-const productRoute = require('./routes/productRoute');
+const authRoute = require('./routes/auth/authRoute');
+const guestRoute = require('./routes/auth/guestRoute');
+const productRoute = require('./routes/admin/productRoute');
+const OrderRoute = require('./routes/user/orderRoute');
 
 // node configurations
 const app = express();
@@ -32,6 +33,7 @@ app.listen(process.env.PORT, () => {
 app.use('/api/auth', authRoute);
 app.use('/api', guestRoute);
 app.use('/api' , productRoute);
+app.use('/api' , OrderRoute);
 
 // global error handler
 app.use((err, req, res, next) => {

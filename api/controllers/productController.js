@@ -1,4 +1,5 @@
-const { describe } = require('node:test');
+const {bucket} = require('../firebase/firebase-config');
+const path = require('path');
 const Product = require('../models/productModel');
 const errorHandler = require('../utils/error');
 
@@ -53,23 +54,129 @@ const getProduct = async (req, res, next) => {
   };
   
 
+// const createProducts = async (req, res, next) => {
+//     try {
+//       const { productName, productType, productQty, price, imagePath, description } = req.body;
+  
+//       if (!productName || !productType || !productQty || !price || !imagePath || !description) {
+//         return next(errorHandler(400, 'Please fill in all required fields'));
+//       }
+  
+//       const product = await Product.create({ productName, productType, productQty, price, imagePath, description });
+  
+//       res.status(201).json({
+//         message: 'Product created successfully',
+//         product
+//       });
+//     } catch (error) {
+//       next(errorHandler(400, error.message));
+//     }
+// };
+
+
+// const createProducts = async (req, res, next) => {
+//   try {
+//     const { productName, productType, productQty, price, description } = req.body;
+
+//     if (!productName || !productType || !productQty || !price || !description) {
+//       return next(errorHandler(400, 'Please fill in all required fields'));
+//     }
+
+//     // Check if file is provided
+//     if (!req.file) {
+//       return next(errorHandler(400, 'Image file is required'));
+//     }
+
+//     // Upload image to Firebase Storage
+//     const blob = bucket.file(Date.now() + path.extname(req.file.originalname));
+//     const blobStream = blob.createWriteStream({
+//       resumable: false,
+//       contentType: req.file.mimetype
+//     });
+
+//     blobStream.on('error', (err) => {
+//       next(errorHandler(500, err.message));
+//     });
+
+//     blobStream.on('finish', async () => {
+//       const imagePath = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      
+//       // Create product with image URL
+//       const product = await Product.create({
+//         productName,
+//         productType,
+//         productQty,
+//         price,
+//         imagePath,
+//         description
+//       });
+
+//       res.status(201).json({
+//         message: 'Product created successfully',
+//         product
+//       });
+//     });
+
+//     blobStream.end(req.file.buffer);
+//   } catch (error) {
+//     next(errorHandler(400, error.message));
+//   }
+// };
+
+
 const createProducts = async (req, res, next) => {
-    try {
-      const { productName, productType, productQty, price, imagePath, description } = req.body;
-  
-      if (!productName || !productType || !productQty || !price || !imagePath || !description) {
-        return next(errorHandler(400, 'Please fill in all required fields'));
-      }
-  
-      const product = await Product.create({ productName, productType, productQty, price, imagePath, description });
-  
+  try {
+    const { productName, productType, productQty, price, description } = req.body;
+    const user_id = req.user.id;
+    console.log(user_id);
+
+    if (!productName || !productType || !productQty || !price || !description) {
+      return next(errorHandler(400, 'Please fill in all required fields'));
+    }
+
+    // Check if file is provided
+    if (!req.file) {
+      return next(errorHandler(400, 'Image file is required'));
+    }
+
+    // Upload image to Firebase Storage
+    const blob = bucket.file(Date.now() + path.extname(req.file.originalname));
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+      contentType: req.file.mimetype
+    });
+
+    blobStream.on('error', (err) => {
+      next(errorHandler(500, err.message));
+    });
+
+    blobStream.on('finish', async () => {
+      // Make the file public
+      await blob.makePublic();
+
+      const imagePath = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+      // Create product with image URL
+      const product = await Product.create({
+        productName,
+        productType,
+        productQty,
+        price,
+        imagePath,
+        description,
+        user_id
+      });
+
       res.status(201).json({
         message: 'Product created successfully',
         product
       });
-    } catch (error) {
-      next(errorHandler(400, error.message));
-    }
+    });
+
+    blobStream.end(req.file.buffer);
+  } catch (error) {
+    next(errorHandler(400, error.message));
+  }
 };
 
 
