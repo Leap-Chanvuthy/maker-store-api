@@ -7,6 +7,7 @@ const authRoute = require('./routes/auth/authRoute');
 const guestRoute = require('./routes/auth/guestRoute');
 const productRoute = require('./routes/admin/productRoute');
 const OrderRoute = require('./routes/user/orderRoute');
+const statisticRoute = require('./routes/admin/statisticRoute');
 
 // node configurations
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoute);
 app.use('/api', guestRoute);
 app.use('/api' , productRoute);
 app.use('/api' , OrderRoute);
+app.use('/api' , statisticRoute);
 
 // global error handler
 app.use((err, req, res, next) => {
