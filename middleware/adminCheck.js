@@ -19,7 +19,7 @@ const adminCheck = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log('Decoded token:', decoded);
 
-    if (decoded.user_type === 'admin') {
+    if (decoded.user_type === 'ADMIN') {
       req.user = decoded; // Attach decoded token to req.user
       next();
     } else {

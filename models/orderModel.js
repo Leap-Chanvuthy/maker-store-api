@@ -1,43 +1,3 @@
-// const mongoose = require('mongoose');
-// const Product = require('../models/productModel');
-
-// const orderSchema = new mongoose.Schema({
-//   // User who placed the order
-//   user_id: {
-//     type: String,
-//     required: true,
-//   },
-//   // List of ordered products
-//   products: [
-//     {
-//       productId: {
-//         type : String,
-//         required: true,
-//       },
-//       quantity: {
-//         type: Number,
-//         required: true,
-//         min: 1, 
-//       },
-//       status: {
-//         type: String,
-//         enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-//         default: 'pending',
-//       },
-//     },
-//   ],
-//   // Total order amount
-//   totalAmount: {
-//     type: Number,
-//     required: true,
-//   },
-// }, {timestamps : true});
-
-// const Order = mongoose.model('Order' , orderSchema);
-
-// module.exports = Order;
-
-
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
@@ -76,11 +36,6 @@ const orderSchema = new mongoose.Schema({
         required: true,
         min: 1,
       },
-      status: {
-        type: String,
-        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-        default: 'pending',
-      },
       unitPrice: {  
         type: Number,
         required: true,
@@ -91,6 +46,11 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
+  status: {
+    type: String,
+    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+    default: 'pending',
+  },
   totalAmount: {
     type: Number,
     required: true,
