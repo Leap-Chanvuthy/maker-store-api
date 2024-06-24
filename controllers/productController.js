@@ -2,6 +2,7 @@ const {bucket} = require('../firebase/firebase-config');
 const path = require('path');
 const Product = require('../models/productModel');
 const errorHandler = require('../utils/error');
+const mongoose = require('mongoose');
 
 
 const getProducts = (async(req , res , next) => {
@@ -123,6 +124,72 @@ const getProduct = async (req, res, next) => {
 //   }
 // };
 
+//======
+
+// const createProducts = async (req, res, next) => {
+//   try {
+//     const { productName, productType, productQty, price, description } = req.body;
+//     const user_id = req.user.id;
+//     console.log(user_id);
+
+//     if (!productName || !productType || !productQty || !price || !description) {
+//       return next(errorHandler(400, 'Please fill in all required fields'));
+//     }
+
+//     // Check if files are provided
+//     if (!req.files || req.files.length === 0) {
+//       return next(errorHandler(400, 'Image files are required'));
+//     }
+
+//     const imagePaths = [];
+
+//     for (const file of req.files) {
+//       // Generate a unique identifier for the product
+//       const productId = new mongoose.Types.ObjectId();
+//       const productFolder = `products/${productId}`;
+
+//       // Upload image to Firebase Storage
+//       const blob = bucket.file(`${productFolder}/${Date.now()}${path.extname(file.originalname)}`);
+//       const blobStream = blob.createWriteStream({
+//         resumable: false,
+//         contentType: file.mimetype
+//       });
+
+//       blobStream.on('error', (err) => {
+//         next(errorHandler(500, err.message));
+//       });
+
+//       await new Promise((resolve, reject) => {
+//         blobStream.on('finish', async () => {
+//           // Make the file public
+//           await blob.makePublic();
+//           const imagePath = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+//           imagePaths.push(imagePath);
+//           resolve();
+//         });
+//         blobStream.end(file.buffer);
+//       });
+//     }
+
+//     // Create product with image URLs
+//     const product = await Product.create({
+//       productName,
+//       productType,
+//       productQty,
+//       price,
+//       imagePaths, // Store all image URLs
+//       description,
+//       user_id
+//     });
+
+//     res.status(201).json({
+//       message: 'Product created successfully',
+//       product
+//     });
+//   } catch (error) {
+//     next(errorHandler(400, error.message));
+//   }
+// };
 
 const createProducts = async (req, res, next) => {
   try {
@@ -134,50 +201,62 @@ const createProducts = async (req, res, next) => {
       return next(errorHandler(400, 'Please fill in all required fields'));
     }
 
-    // Check if file is provided
-    if (!req.file) {
-      return next(errorHandler(400, 'Image file is required'));
+    // Check if files are provided
+    if (!req.files || req.files.length === 0) {
+      return next(errorHandler(400, 'Image files are required'));
     }
 
-    // Upload image to Firebase Storage
-    const blob = bucket.file(Date.now() + path.extname(req.file.originalname));
-    const blobStream = blob.createWriteStream({
-      resumable: false,
-      contentType: req.file.mimetype
-    });
+    const images = [];
 
-    blobStream.on('error', (err) => {
-      next(errorHandler(500, err.message));
-    });
+    for (const file of req.files) {
+      // Generate a unique identifier for the image
+      const imageId = new mongoose.Types.ObjectId();
+      const productFolder = `products/${imageId}`;
 
-    blobStream.on('finish', async () => {
-      // Make the file public
-      await blob.makePublic();
-
-      const imagePath = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-
-      // Create product with image URL
-      const product = await Product.create({
-        productName,
-        productType,
-        productQty,
-        price,
-        imagePath,
-        description,
-        user_id
+      // Upload image to Firebase Storage
+      const blob = bucket.file(`${productFolder}/${Date.now()}${path.extname(file.originalname)}`);
+      const blobStream = blob.createWriteStream({
+        resumable: false,
+        contentType: file.mimetype
       });
 
-      res.status(201).json({
-        message: 'Product created successfully',
-        product
+      blobStream.on('error', (err) => {
+        next(errorHandler(500, err.message));
       });
+
+      await new Promise((resolve, reject) => {
+        blobStream.on('finish', async () => {
+          // Make the file public
+          await blob.makePublic();
+          const imagePath = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          images.push({ imageId, imagePath });
+          resolve();
+        });
+        blobStream.end(file.buffer);
+      });
+    }
+
+    // Create product with image URLs
+    const product = await Product.create({
+      productName,
+      productType,
+      productQty,
+      price,
+      images, // Store all image information
+      description,
+      user_id
     });
 
-    blobStream.end(req.file.buffer);
+    res.status(201).json({
+      message: 'Product created successfully',
+      product
+    });
   } catch (error) {
     next(errorHandler(400, error.message));
   }
 };
+
+
 
 
 const deleteProduct = (async(req , res , next) => {
