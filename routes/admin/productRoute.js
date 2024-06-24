@@ -8,8 +8,8 @@ const adminCheck = require('../../middleware/adminCheck');
 
 router.get('/products' , getProducts );
 router.get('/product/:id' , getProduct);
-router.post('/product', upload.single('image'), auth ,createProducts);
-router.delete('/product/:id' , deleteProduct);
-router.patch('/product/:id' , updateProduct);
+router.post('/product', upload.single('image'), auth, adminCheck ,createProducts);
+router.delete('/product/:id' , auth, adminCheck , deleteProduct);
+router.patch('/product/:id' , auth, adminCheck , updateProduct);
 
 module.exports = router;
