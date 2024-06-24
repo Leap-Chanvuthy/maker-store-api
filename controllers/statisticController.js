@@ -9,7 +9,9 @@ const statistic = (async(req , res , next) => {
         const totalProduct = await Product.countDocuments();
         const totalUser = await User.countDocuments();
         const totalOrder = await Order.countDocuments();
-        res.status(200).json({message : 'successful' , totalProduct , totalUser , totalOrder})  
+        const productType = await Product.find({} , 'productType').countDocuments();
+
+        res.status(200).json({message : 'successful' , totalProduct, productType : productType , totalUser , totalOrder})  
     }catch(error){
         next(errorHandler(400 , error ));
     }
