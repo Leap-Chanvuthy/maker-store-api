@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./documentation.json');
 
 // import routes
 const authRoute = require('./routes/auth/authRoute');
@@ -36,6 +38,7 @@ app.use('/api', guestRoute);
 app.use('/api' , productRoute);
 app.use('/api' , OrderRoute);
 app.use('/api' , statisticRoute);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // global error handler
 app.use((err, req, res, next) => {
